@@ -1,12 +1,20 @@
 class Usuario:    
 
     def __init__(self, id_usuario, nombre, tipo):
-        pass
+        self.__id_usuario = id_usuario
+        self.__nombre = nombre
+        self.__tipo = tipo
+
     def puede_acceder(self, libro):
         pass
 
     def to_dict(self):
-        pass
+        return {
+            'id_usuario': self.__id_usuario,
+            'nombre': self.__nombre,
+            'tipo': self.__tipo
+        }
+
     @property
     def id_usuario(self):
         return self.__id_usuario
