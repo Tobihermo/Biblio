@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Préstamos</h2>
+    <form action="{{ url_for('prestar_libro') }}" method="POST">
+        <label for="id_libro">Libro</label>
+        <select name="id_libro">
+            {% for libro in libros %}
+                <option value="{{ libro.id_libro }}">{{ libro.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="id_usuario">Usuario</label>
+        <select name="id_usuario">
+            {% for usuario in usuarios %}
+                <option value="{{ usuario.id_usuario }}">{{ usuario.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Prestar</button>
+    </form>
+{% endblock %}

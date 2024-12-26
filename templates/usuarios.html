@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Usuarios</h2>
+    <a href="{{ url_for('agregar_usuario') }}">Agregar Usuario</a>
+    <ul>
+        {% for usuario in usuarios %}
+            <li>{{ usuario.nombre }} - {{ usuario.tipo }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

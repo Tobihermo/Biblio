@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca</title>
+</head>
+<body>
+    <header>
+        <h1>Biblioteca</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Inicio</a>
+            <a href="{{ url_for('libros') }}">Libros</a>
+            <a href="{{ url_for('usuarios') }}">Usuarios</a>
+            <a href="{{ url_for('reservas') }}">reservas</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
