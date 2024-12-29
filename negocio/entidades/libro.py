@@ -1,5 +1,5 @@
 class Libro:
-    def __init__(self, id_libro, nombre, autor, categoria, estado, id_estanteria, id_estante):
+    def __init__(self, id_libro, nombre, autor, categoria, estado, id_estanteria, id_estante, nivel_acceso):
         self.__id_libro = id_libro
         self.__nombre = nombre
         self.__autor = autor
@@ -7,6 +7,7 @@ class Libro:
         self.__estado = estado  # Valores posibles: prestado (no esta disponible), disponible,
         self.__id_estanteria = id_estanteria
         self.__id_estante = id_estante
+        self.__nivel_acceso=nivel_acceso
 
    
     def actualizar_estado(self, nuevo_estado):
@@ -20,12 +21,17 @@ class Libro:
             "categoria": self.__categoria,
             "estado": self.__estado,
             "id_estanteria": self.__id_estanteria,
-            "id_estante": self.__id_estante
+            "id_estante": self.__id_estante,
+            "nivel_acceso": self.__nivel_acceso
         }
 
     @property
     def id_libro(self):
         return self.__id_libro
+
+    @property
+    def nivel_acceso(self):
+        return self.__nivel_acceso
 
     @property
     def nombre(self):

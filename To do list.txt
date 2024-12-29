@@ -25,9 +25,12 @@ LISTA DE TAREAS PROYECTO BIBLIOTECA:
 Revisar que las entidades estén bien codeadas y completar sus métodos incompletos.
 Revisar y completar las clases Biblioteca, GestionLibros, GestionReserva, GestionUsuario.
 Verificar que los Dao estén correctamente codeados.
-Hacer los html.
 Hacer los tests.
 Terminar la parte de app.py.
-Hacer la base de datos.
 Revisar que se cumplan requisitos de Poo.
+
+
+Que se puedan reservar libros
+Que puedas hacer una cuenta de estudiante y profesor, y que al escribir en algún lado un código secreto te de acceso a todos los libros
+Hacer los libros disponibles, prestados, copia de profesor y copia de biblioteca
 

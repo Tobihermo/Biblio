@@ -1,22 +1,41 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Libros</title>
+</head>
+<body>
+    <h1>Reservar Libros</h1>
 
-{% block content %}
-    <h2>Préstamos</h2>
-    <form action="{{ url_for('prestar_libro') }}" method="POST">
-        <label for="id_libro">Libro</label>
-        <select name="id_libro">
+    <form action="{{ url_for('reservar') }}" method="POST">
+        <label for="id_libro">Selecciona un libro:</label>
+        <select name="id_libro" id="id_libro">
             {% for libro in libros %}
                 <option value="{{ libro.id_libro }}">{{ libro.nombre }}</option>
             {% endfor %}
         </select>
 
-        <label for="id_usuario">Usuario</label>
-        <select name="id_usuario">
+        <label for="id_usuario">Selecciona un usuario:</label>
+        <select name="id_usuario" id="id_usuario">
             {% for usuario in usuarios %}
                 <option value="{{ usuario.id_usuario }}">{{ usuario.nombre }}</option>
             {% endfor %}
         </select>
 
-        <button type="submit">Prestar</button>
+        <button type="submit">Reservar</button>
     </form>
-{% endblock %}
+
+    <h2>Devolver Libros</h2>
+    <form action="{{ url_for('reservar') }}" method="POST">
+        <label for="id_reserva">Ingrese el ID de la Reserva:</label>
+        <input type="text" name="id_reserva" id="id_reserva">
+        <button type="submit" name="devolver">Devolver</button>
+    </form>
+
+    {% for message in get_flashed_messages() %}
+        <div class="{{ message }}">{{ message }}</div>
+    {% endfor %}
+
+</body>
+</html>

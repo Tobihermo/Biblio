@@ -20,6 +20,11 @@ class UsuarioDAO:
             ''')
             conn.commit()
 
+    def db_path(self):
+        """
+        Propiedad que devuelve la ruta de la base de datos.
+        """
+        return self.__db_path
     def agregar_usuario(self, usuario):
         """
         """

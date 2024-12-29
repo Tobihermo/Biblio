@@ -1,18 +1,18 @@
-from negocio.fecha import Fecha
+from negocio.entidades.fecha import Fecha
 
 class Reserva:
     def __init__(self, id_reserva: int, id_libro: int, id_usuario: int, fecha_reserva: Fecha, fecha_devolucion: Fecha):
-        self.__id_reserva = id_reserva
-        self.__id_libro = id_libro
-        self.__id_usuario = id_usuario
-        self.__fecha_reserva = fecha_reserva
-        self.__fecha_devolucion = fecha_devolucion
+        self.id_reserva = id_reserva
+        self.id_libro = id_libro
+        self.id_usuario = id_usuario
+        self.fecha_reserva = fecha_reserva
+        self.fecha_devolucion = fecha_devolucion
 
     def to_dict(self):
         return {
-            'id_reserva': self.__id_reserva,
-            'id_libro': self.__id_libro,
-            'id_usuario': self.__id_usuario,
-            'fecha_reserva': self.__fecha_reserva,
-            'fecha_devolucion': self.__fecha_devolucion
+            'id_reserva': self.id_reserva,
+            'id_libro': self.id_libro,
+            'id_usuario': self.id_usuario,
+            'fecha_reserva': self.fecha_reserva,
+            'fecha_devolucion': self.fecha_devolucion
         }
