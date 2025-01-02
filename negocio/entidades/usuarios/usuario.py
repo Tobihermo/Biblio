@@ -1,12 +1,13 @@
-class Usuario:    
-
-    def __init__(self, id_usuario, nombre, tipo):
+class Usuario:
+    """
+    Representa a un usuario del sistema
+    """    
+    def __init__(self, id_usuario: int, nombre: str, tipo: str):
         self.__id_usuario = id_usuario
         self.__nombre = nombre
         self.__tipo = tipo
 
-    def puede_acceder(self, libro):
-        pass
+    #def puede_acceder(self, libro):
 
     def to_dict(self):
         return {

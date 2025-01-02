@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from datetime import datetime
 from persistencia.reservadao import ReservaDAO
+from negocio.entidades.usuarios.profesor import Profesor
+from negocio.entidades.usuarios.estudiante import Estudiante
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -13,8 +15,17 @@ def get_db():
 
 def obtener_usuario_por_id(id_usuario):
     with get_db() as conn:
-        usuario = conn.execute('SELECT * FROM usuarios WHERE id_usuario = ?', (id_usuario,)).fetchone()
-        return usuario
+        usuario_row = conn.execute('SELECT * FROM usuarios WHERE id_usuario = ?', (id_usuario,)).fetchone()
+        if not usuario_row:
+            return None
+        
+        # Crear instancia de usuario según el tipo
+        if usuario_row['tipo'] == 'profesor':
+            return Profesor(usuario_row['id_usuario'], usuario_row['nombre'])
+        elif usuario_row['tipo'] == 'estudiante':
+            return Estudiante(usuario_row['id_usuario'], usuario_row['nombre'])
+        else:
+            return None
 
 def obtener_libros_disponibles(nivel_acceso):
     with get_db() as conn:
@@ -57,7 +68,6 @@ def reservar():
             flash('Libro devuelto con éxito!', 'success')
             return redirect(url_for('index'))
 
-
         # Validación de datos más robusta
         if not id_libro:
             flash('Por favor, selecciona un libro.', 'danger')
@@ -67,7 +77,7 @@ def reservar():
             return redirect(url_for('reservar'))
 
         # Obtener el nivel de acceso del usuario y los detalles del libro
-        usuario = obtener_usuario_por_id(id_usuario)
+        usuario = obtener_usuario_por_id(int(id_usuario))
         if not usuario:
             flash('Usuario no encontrado. Por favor, verifica el ID de usuario.', 'danger')
             return redirect(url_for('reservar'))
@@ -79,8 +89,11 @@ def reservar():
                 return redirect(url_for('reservar'))
 
         # Verificar disponibilidad y nivel de acceso
-        print(libro)  # Depuración: Ver el libro y su estado
-        if libro and libro['estado'] == 'disponible' and libro['nivel_acceso'] <= usuario['nivel_acceso']:
+        if usuario.tipo == 'profesor': 
+            nivel_usuario=2
+        else:
+            nivel_usuario=1
+        if libro and libro['estado'] == 'disponible' and libro['nivel_acceso'] <= nivel_usuario:
             # Crear la reserva y actualizar el estado del libro
             fecha_reserva = datetime.now()
             fecha_devolucion = fecha_reserva.replace(year=fecha_reserva.year + 1)  # Ejemplo: 1 año de duración
@@ -101,13 +114,11 @@ def reservar():
                 flash('No tienes permiso para reservar este libro.', 'danger')
             return redirect(url_for('reservar'))
 
-    # Obtener los libros disponibles para el usuario logueado
-    usuario_actual = obtener_usuario_por_id(1)  # Asumimos que el ID del usuario está disponible (ajustar según tu lógica)
-    libros = obtener_libros_disponibles(usuario_actual['nivel_acceso'])
+
 
     with get_db() as conn:
         usuarios = conn.execute('SELECT * FROM usuarios').fetchall()
-
+        libros=conn.execute('SELECT * FROM BIBLIOTECA').fetchall()
     return render_template("reservas.html", libros=libros, usuarios=usuarios)
 
 # Página para renovar una reserva
