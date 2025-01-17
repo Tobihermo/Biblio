@@ -4,12 +4,11 @@ class Libro:
         self.__nombre = nombre
         self.__autor = autor
         self.__categoria = categoria
-        self.__estado = estado  # Valores posibles: prestado (no esta disponible), disponible,
+        self.__estado = estado
         self.__id_estanteria = id_estanteria
         self.__id_estante = id_estante
-        self.__nivel_acceso=nivel_acceso
+        self.__nivel_acceso = nivel_acceso
 
-   
     def actualizar_estado(self, nuevo_estado):
         self.__estado = nuevo_estado
 

@@ -4,8 +4,6 @@ class Estanteria:
         self.__sector = sector
         self.__estantes = []
 
-
-
     def agregar_estante(self, estante):
         self.__estantes.append(estante)
 
@@ -19,7 +17,6 @@ class Estanteria:
             "sector": self.__sector,
             "estantes": [estante.to_dict() for estante in self.__estantes]
         }
-
 
     @property
     def id_estanteria(self):

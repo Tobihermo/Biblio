@@ -1,5 +1,6 @@
 import sqlite3
-from negocio.entidades.usuario import Usuario
+from negocio.entidades.usuarios.usuario import Usuario
+
 
 class UsuarioDAO:
     def __init__(self):
@@ -25,6 +26,7 @@ class UsuarioDAO:
         Propiedad que devuelve la ruta de la base de datos.
         """
         return self.__db_path
+
     def agregar_usuario(self, usuario):
         """
         """
