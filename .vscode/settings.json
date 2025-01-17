@@ -1,0 +1,16 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "\"D:\\Documentos\\GitHub\\Biblio\\data\\biblioteca.db\"",
+            "name": "biblioteca.db",
+            "group": "biblioteca.db"
+        }
+    ],
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
