@@ -2,19 +2,19 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from datetime import datetime
 from persistencia.reservadao import ReservaDAO
+from persistencia.conexion_db import Conexion_Db
 from negocio.entidades.usuarios.profesor import Profesor
 from negocio.entidades.usuarios.estudiante import Estudiante
+from negocio.biblioteca import Biblioteca
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-def get_db():
-    conn = sqlite3.connect('data/biblioteca.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+conexion_db=Conexion_Db()
+biblioteca=Biblioteca()
 
 def obtener_usuario_por_id(id_usuario):
-    with get_db() as conn:
+    with conexion_db.get_db() as conn:
         usuario_row = conn.execute('SELECT * FROM usuarios WHERE id_usuario = ?', (id_usuario,)).fetchone()
         if not usuario_row:
             return None
@@ -27,32 +27,27 @@ def obtener_usuario_por_id(id_usuario):
         else:
             return None
 
-def obtener_libros_disponibles(nivel_acceso):
-    with get_db() as conn:
-        libros = conn.execute(''' 
-            SELECT * FROM biblioteca 
-            WHERE estado = "disponible" AND nivel_acceso <= ?
-        ''', (nivel_acceso,)).fetchall()
-        return libros
+
 
 # Página principal con búsqueda de libros
 @app.route("/", methods=["GET", "POST"])
 def index():
-    query = request.form.get("query", "")  # Obtener la consulta del formulario si hay alguna
+    query = request.form.get("query", "").strip()  # Obtener la consulta del formulario si hay alguna
     libros = []
 
     # Si hay una consulta (búsqueda), filtrar los libros según la consulta
     if query:
-        with get_db() as conn:
+        with conexion_db.get_db() as conn:
+            # Aquí deberías hacer una búsqueda en la base de datos por el nombre o autor del libro
             libros = conn.execute('''
-                SELECT * FROM biblioteca 
-                WHERE nombre LIKE ? OR autor LIKE ? OR categoria LIKE ?
-            ''', ('%' + query + '%', '%' + query + '%', '%' + query + '%')).fetchall()
+                SELECT * FROM biblioteca WHERE nombre LIKE ? OR autor LIKE ?
+            ''', (f'%{query}%', f'%{query}%')).fetchall()
     else:
-        # Si no hay consulta, no mostrar libros por defecto, solo mostrar el formulario
-        libros = []
+        # Si no hay consulta, mostrar todos los libros
+        libros = biblioteca.listar_libros()
 
     return render_template("index.html", query=query, libros=libros)
+
 
 # Página de reservas (prestar libros)
 @app.route("/reservar", methods=["GET", "POST"])
@@ -61,6 +56,7 @@ def reservar():
         id_libro = request.form.get("id_libro")
         id_usuario = request.form.get("id_usuario")
 
+
         if 'devolver' in request.form:
             id_reserva = request.form.get('id_reserva')
             reserva_dao = ReservaDAO()
@@ -68,63 +64,44 @@ def reservar():
             flash('Libro devuelto con éxito!', 'success')
             return redirect(url_for('index'))
 
-        # Validación de datos más robusta
-        if not id_libro:
-            flash('Por favor, selecciona un libro.', 'danger')
-            return redirect(url_for('reservar'))
-        if not id_usuario:
-            flash('Por favor, selecciona un usuario.', 'danger')
+
+        # Validación simplificada
+        if not id_libro or not id_usuario:
+            flash('Por favor, selecciona un libro y un usuario.', 'danger')
             return redirect(url_for('reservar'))
 
-        # Obtener el nivel de acceso del usuario y los detalles del libro
         usuario = obtener_usuario_por_id(int(id_usuario))
         if not usuario:
             flash('Usuario no encontrado. Por favor, verifica el ID de usuario.', 'danger')
             return redirect(url_for('reservar'))
 
-        with get_db() as conn:
-            libro = conn.execute('SELECT * FROM biblioteca WHERE id_libro = ?', (id_libro,)).fetchone()
-            if not libro:
-                flash('Libro no encontrado.', 'danger')
-                return redirect(url_for('reservar'))
-
-        # Verificar disponibilidad y nivel de acceso
-        if usuario.tipo == 'profesor': 
-            nivel_usuario=2
-        else:
-            nivel_usuario=1
-        if libro and libro['estado'] == 'disponible' and libro['nivel_acceso'] <= nivel_usuario:
-            # Crear la reserva y actualizar el estado del libro
-            fecha_reserva = datetime.now()
-            fecha_devolucion = fecha_reserva.replace(year=fecha_reserva.year + 1)  # Ejemplo: 1 año de duración
-
-            # Insertar la reserva en la base de datos
-            with get_db() as conn:
-                conn.execute('''INSERT INTO reservas (id_libro, id_usuario, fecha_reserva, fecha_devolucion) 
-                                VALUES (?, ?, ?, ?)''', 
-                             (id_libro, id_usuario, fecha_reserva, fecha_devolucion))
-                conn.execute('UPDATE biblioteca SET estado = "prestado" WHERE id_libro = ?', (id_libro,))
-                conn.commit()
-
-            flash('Reserva realizada con éxito!', 'success')
-        else:
-            if libro['estado'] != 'disponible':
-                flash('Este libro ya está prestado.', 'danger')
-            else:
-                flash('No tienes permiso para reservar este libro.', 'danger')
+        libro = biblioteca.buscar_libro_por_id(int(id_libro))
+        if not libro:
+            flash('Libro no encontrado.', 'danger')
             return redirect(url_for('reservar'))
 
+        # Realizar la reserva utilizando la capa de negocio
+        exito = biblioteca.prestar_libro(id_libro, id_usuario)
+        if exito:
+            flash('Reserva realizada con éxito!', 'success')
+        else:
+            flash('No se pudo realizar la reserva. Verifica la disponibilidad y permisos.', 'danger')
 
+        return redirect(url_for('reservar'))
 
-    with get_db() as conn:
+    # Mostrar usuarios y libros
+    with conexion_db.get_db() as conn:
         usuarios = conn.execute('SELECT * FROM usuarios').fetchall()
-        libros=conn.execute('SELECT * FROM BIBLIOTECA').fetchall()
+        libros = conn.execute('SELECT * FROM BIBLIOTECA').fetchall()
     return render_template("reservas.html", libros=libros, usuarios=usuarios)
+
+
+
 
 # Página para renovar una reserva
 @app.route("/renovar/<int:id_reserva>", methods=["POST"])
 def renovar_reserva(id_reserva):
-    with get_db() as conn:
+    with conexion_db.get_db() as conn:
         reserva = conn.execute('SELECT * FROM reservas WHERE id_reserva = ?', (id_reserva,)).fetchone()
         if reserva:
             nueva_fecha_devolucion = datetime.now().replace(year=datetime.now().year + 1)
@@ -140,7 +117,7 @@ def renovar_reserva(id_reserva):
 # Página para ver el historial de préstamos
 @app.route("/historial")
 def historial():
-    with get_db() as conn:
+    with conexion_db.get_db() as conn:
         historial = conn.execute(''' 
             SELECT * FROM reservas
             JOIN biblioteca ON reservas.id_libro = biblioteca.id_libro
