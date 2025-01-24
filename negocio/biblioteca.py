@@ -39,7 +39,7 @@ class Biblioteca:
                 libro_data["estado"],
                 libro_data["id_estanteria"],
                 libro_data["id_estante"],
-                libro_data["nivel_acceso"]
+                libro_data.get("nivel_acceso", None)  # Usa .get() para evitar KeyError
             )
         return None
 
@@ -103,7 +103,7 @@ class Biblioteca:
                 libro["estado"],
                 libro["id_estanteria"],
                 libro["id_estante"],
-                libro["nivel_acceso"]
+                libro.get("nivel_acceso", None)  # Maneja posibles valores faltantes
             ) for libro in libros_data
         ]
 
