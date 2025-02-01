@@ -87,8 +87,16 @@ class TestGestionBiblioteca(unittest.TestCase):
         
         self.gestion_biblioteca.libro_dao.obtener_libro.assert_called_once_with(id_libro)
         self.assertEqual(estado, 'disponible')
+    
+    def test09_obtener_estado_libro_no_existente(self):
+        self.gestion_biblioteca.libro_dao.obtener_libro.return_value = None
 
-    def test09_generar_id_reserva(self):
+        estado = self.gestion_biblioteca.obtener_estado_libro(999)
+
+        self.assertIsNone(estado)
+        self.gestion_biblioteca.libro_dao.obtener_libro.assert_called_once_with(999)
+
+    def test10_generar_id_reserva(self):
         reservas_mock = [MagicMock(spec=Reserva), MagicMock(spec=Reserva)]
         self.gestion_biblioteca.reserva_dao.listar_reservas.return_value = reservas_mock
         

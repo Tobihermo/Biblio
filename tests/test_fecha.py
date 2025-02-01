@@ -14,3 +14,10 @@ class TestFecha(unittest.TestCase):
             Fecha(2023, 12, 32)
         with self.assertRaises(ValueError):
             Fecha(2023, 12, -1)
+        
+        with self.assertRaises(TypeError):
+            Fecha("2023", 12, 31)
+        with self.assertRaises(TypeError):
+            Fecha(2023, "12", 31)
+        with self.assertRaises(TypeError):
+            Fecha(2023, 12, "31")
