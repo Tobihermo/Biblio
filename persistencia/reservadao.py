@@ -1,8 +1,10 @@
 import sqlite3
 from negocio.entidades.reserva import Reserva
+from flask import Flask, render_template, request, redirect, url_for, flash
+
 
 class ReservaDAO:
-    def __init__(self):
+    def __init__(self): 
         self.__db_path = "data/biblioteca.db"
         self.__inicializar_db()
 
@@ -22,10 +24,12 @@ class ReservaDAO:
             ''')
             conn.commit()
 
+    def get_db(self):
+        return sqlite3.connect(self.__db_path)
 
     def agregar_reserva(self, reserva):
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with sqlite3.connect(self.__db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('''
                     INSERT INTO reservas (id_libro, id_usuario, fecha_reserva, fecha_devolucion)
@@ -33,15 +37,13 @@ class ReservaDAO:
                 ''', (
                     reserva.id_libro,
                     reserva.id_usuario,
-                    str(reserva.fecha_reserva),  # Asegúrate de que str(fecha_reserva) devuelva el formato correcto
+                    str(reserva.fecha_reserva), 
                     str(reserva.fecha_devolucion)
                 ))
                 conn.commit()
                 print("Reserva agregada correctamente.")
         except sqlite3.Error as e:
             print(f"Error al agregar reserva: {e}")
-            # Aquí puedes agregar lógica para manejar el error, por ejemplo, registrarlo en un log
-
 
     def eliminar_reserva(self, id_reserva):
         """
@@ -112,7 +114,7 @@ class ReservaDAO:
 
                 # Eliminar la reserva
                 cur.execute('DELETE FROM reservas WHERE id_reserva = ?', (id_reserva,))
-
+                flash(f"Reserva {id_reserva} devuelta con éxito.", "success")
                 # Actualizar el estado del libro a "disponible"
                 cur.execute('UPDATE biblioteca SET estado = "disponible" WHERE id_libro = ?', (id_libro,))
 
