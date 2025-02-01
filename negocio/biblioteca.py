@@ -44,47 +44,39 @@ class Biblioteca:
         return None
 
     def prestar_libro(self, id_libro: int, id_usuario: int):
-        """
-        Presta un libro a un usuario.
-        """
         libro = self.buscar_libro_por_id(id_libro)
         usuario = self.usuario_dao.obtener_usuario(id_usuario)
 
         if libro and usuario:
-            # Verifica si el libro está disponible para prestar
             if libro.estado == "disponible":
                 fecha_reserva = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                # Por simplicidad, asignamos una fecha de devolución en 7 días
-                fecha_devolucion = (datetime.datetime.now(
-                ) + datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')
+                fecha_devolucion = (datetime.datetime.now() + datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')
 
                 # Crear la reserva
                 id_reserva = self._generar_id_reserva()
-                reserva = Reserva(id_reserva, id_libro,
-                                  id_usuario, fecha_reserva, fecha_devolucion)
+                reserva = Reserva(id_reserva, id_libro, id_usuario, fecha_reserva, fecha_devolucion)
 
-                # Agregar la reserva a la base de datos
+                # Registrar la reserva en la base de datos
                 self.prestamo_dao.agregar_reserva(reserva)
 
-                # Actualizar el estado del libro a "prestado"
+                # Cambiar el estado del libro a "prestado"
                 self.libro_dao.actualizar_estado(id_libro, "prestado")
-
                 return True
+
         return False
 
+
     def devolver_libro(self, id_libro: int):
-        """
-        Devuelve un libro y actualiza su estado a "disponible".
-        """
         libro = self.buscar_libro_por_id(id_libro)
         if libro:
-            # Eliminar la reserva asociada a este libro
             reservas = self.prestamo_dao.listar_reservas()
             for reserva in reservas:
-                if reserva.id_libro == id_libro and reserva.fecha_devolucion > datetime.datetime.now():
+                if reserva.id_libro == id_libro and not reserva.fecha_devolucion:
+                    self.prestamo_dao.actualizar_fecha_devolucion(reserva.id_reserva, datetime.datetime.now())
                     self.prestamo_dao.eliminar_reserva(reserva.id_reserva)
                     break
-            # Actualizar el estado del libro
+            
+            # Cambiar el estado del libro a "disponible"
             self.libro_dao.actualizar_estado(id_libro, "disponible")
             return True
         return False
@@ -103,7 +95,7 @@ class Biblioteca:
                 libro["estado"],
                 libro["id_estanteria"],
                 libro["id_estante"],
-                libro.get("nivel_acceso", None)  # Maneja posibles valores faltantes
+                libro.get("nivel_acceso", None)
             ) for libro in libros_data
         ]
 
@@ -119,9 +111,12 @@ class Biblioteca:
 
     def _generar_id_reserva(self):
         """
-        Genera un nuevo ID de reserva basado en el mayor ID existente en la base de datos.
+        Genera un nuevo ID de reserva basado en el mayor ID existente en la base de datos,
+        utilizando una consulta SQL para mayor eficiencia.
         """
-        reservas = self.prestamo_dao.listar_reservas()
-        if reservas:
-            return max([reserva.id_reserva for reserva in reservas]) + 1
-        return 1
+        with self.prestamo_dao.get_db() as conn:
+            max_id = conn.execute('SELECT MAX(id_reserva) FROM reservas').fetchone()[0]
+            if max_id is None:
+                return 1
+            return max_id + 1
+
