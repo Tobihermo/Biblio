@@ -24,7 +24,7 @@ def agregar_libro():
     nombre = input("Nombre del libro: ")
     autor = input("Autor del libro: ")
     categoria = input("Categoría del libro: ")
-    estado = "disponible"  # El estado se establece como 'Disponible' por defecto
+    estado = "disponible"  
     id_estanteria = int(input("ID de la estantería: "))
     id_estante = int(input("ID del estante: "))
     id_acceso = int(input("Nivel de acceso necesario: "))

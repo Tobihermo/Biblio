@@ -14,7 +14,6 @@ def borrar_libro():
     libro = cursor.fetchone()
     
     if libro:
-        # Confirmar antes de borrar
         print(f"\nLibro encontrado: {libro}")
         confirmacion = input("¿Está seguro de que desea borrar este libro? (s/n): ")
         
@@ -45,5 +44,4 @@ print("\nLibros restantes en la biblioteca:")
 for libro in libros_restantes:
     print(libro)
 
-# Cerrar la conexión
 conn.close()

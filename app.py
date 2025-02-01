@@ -32,7 +32,7 @@ def obtener_usuario_por_id(id_usuario):
 # Página principal con búsqueda de libros
 @app.route("/", methods=["GET", "POST"])
 def index():
-    query = request.form.get("query", "").strip()  # Obtener la consulta del formulario si hay alguna
+    query = request.form.get("query", "").strip() 
     libros = []
 
     # Si hay una consulta (búsqueda), filtrar los libros según la consulta
@@ -55,14 +55,6 @@ def reservar():
     if request.method == "POST":
         id_libro = request.form.get("id_libro")
         id_usuario = request.form.get("id_usuario")
-
-
-        if 'devolver' in request.form:
-            id_reserva = request.form.get('id_reserva')
-            reserva_dao = ReservaDAO()
-            reserva_dao.devolver_libro(id_reserva)
-            flash('Libro devuelto con éxito!', 'success')
-            return redirect(url_for('index'))
 
 
         # Validación simplificada
@@ -97,22 +89,37 @@ def reservar():
 
 
 
+@app.route('/devolver_libro', methods=['GET', 'POST'])
+def devolver():
+    if request.method == 'POST':
+        id_reserva = request.form.get('id_reserva')
 
-# Página para renovar una reserva
-@app.route("/renovar/<int:id_reserva>", methods=["POST"])
-def renovar_reserva(id_reserva):
-    with conexion_db.get_db() as conn:
-        reserva = conn.execute('SELECT * FROM reservas WHERE id_reserva = ?', (id_reserva,)).fetchone()
-        if reserva:
-            nueva_fecha_devolucion = datetime.now().replace(year=datetime.now().year + 1)
-            conn.execute('UPDATE reservas SET fecha_devolucion = ? WHERE id_reserva = ?', 
-                         (nueva_fecha_devolucion, id_reserva))
-            conn.commit()
-            flash('Reserva renovada con éxito!', 'success')
-        else:
-            flash('Reserva no encontrada.', 'danger')
+        if not id_reserva:  
+            flash("Por favor, ingrese un ID de reserva.", "danger")
+            return redirect(url_for('devolver'))
 
-    return redirect(url_for('index'))
+        with conexion_db.get_db() as conn:
+            # Buscar la reserva y obtener el id_libro asociado
+            reserva = conn.execute('SELECT * FROM reservas WHERE id_reserva = ?', (id_reserva,)).fetchone()
+
+            if reserva:
+                id_libro = reserva['id_libro'] 
+                # Eliminar la reserva
+                conn.execute('DELETE FROM reservas WHERE id_reserva = ?', (id_reserva,))
+                # Actualizar el estado del libro a 'disponible'
+                conn.execute('UPDATE biblioteca SET estado = "disponible" WHERE id_libro = ?', (id_libro,))
+                
+                conn.commit()
+                flash(f"Reserva {id_reserva} devuelta con éxito.", "success")
+            else:
+                flash(f"No se encontró la reserva con ID {id_reserva}.", "danger")
+
+        return redirect(url_for('devolver'))
+
+    return render_template('devolver_libro.html')
+
+
+
 
 # Página para ver el historial de préstamos
 @app.route("/historial")
