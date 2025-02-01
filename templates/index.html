@@ -5,46 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <style>
+        .btn-custom {
+            background-color: #bee3ef;
+            color: #064710;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.25rem;
+            width: 8cm;
+            border-radius: 50px;
+            padding: 0.75rem;
+            text-align: center;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-custom:hover {
+            background-color: #064710;
+            color: white;
+        }
+    </style>
 </head>
-<body class="bg-light">
-
-    <div class="container mt-5">
-        <div class="text-center mb-4">
-            <h1 class="fw-bold text-primary">Biblioteca</h1>
-            <p class="text-secondary fs-5">Busca libros disponibles en nuestra colección:</p>
-        </div>
-
-        <div class="card shadow-sm p-4 border-0">
-            <form action="/" method="POST" class="d-flex justify-content-center">
-                <input type="text" name="query" class="form-control w-50 rounded-pill px-3" placeholder="Buscar por título, autor o categoría" value="{{ query }}">
-                <button type="submit" class="btn btn-primary ms-2 rounded-pill px-4">Buscar</button>
-            </form>
-        </div>
-
-        {% if query %}
-            <div class="card shadow-sm p-4 border-0 mt-4">
-                {% if libros %}
-                    <h2 class="text-success text-center">Resultados de búsqueda</h2>
-                    <ul class="list-group list-group-flush mt-3">
-                        {% for libro in libros %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold">{{ libro.nombre }}</span>
-                                <span class="text-muted">{{ libro.autor }} - {{ libro.categoria }}</span>
-                                <span class="badge bg-info text-dark">{{ libro.estado }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-danger text-center fs-5 mt-3">No se encontraron libros que coincidan con "<strong>{{ query }}</strong>".</p>
-                {% endif %}
-            </div>
-        {% endif %}
-
-        <div class="mt-5 d-flex flex-column align-items-center gap-3">
-            <a href="{{ url_for('reservar') }}" class="btn btn-success btn-lg rounded-pill shadow-sm px-5">Realizar una reserva</a>
-            <a href="{{ url_for('historial') }}" class="btn btn-info btn-lg rounded-pill shadow-sm px-5 text-white">Historial de Reservas</a>
-        </div>
+<body style="background-color: #f4f3ed; font-family: 'Times New Roman', serif;">
+    <div class="w-100 text-center py-1 position-fixed top-0 start-0" style="background-color: #bee3ef; z-index: 1000; width: 100%; margin: 0;">
+        <span style="color: #064710; font-family: 'Times New Roman', serif; font-size: 0.9rem; font-weight: normal;">
+            Reservas de Libros Exclusivos
+        </span>
     </div>
+
+    <!--Imagen-->
+    <div class="text-center mt-5">
+        <img src="{{ url_for('static', filename='images/biblioteca.png') }}" class="img-fluid" alt="Biblioteca" width="300" margin-top: 20px;>
+    </div>
+
+    <!--Formulario de búsqueda-->
+    <div class="card p-4 border-0" style="background-color: transparent;">
+        <form action="/" method="POST" class="d-flex justify-content-center">
+            <input type="text" name="query" class="form-control w-50 rounded-pill px-3" placeholder="Buscar por título, autor o categoría" value="{{ query }}" style="background-color: #f4f3ed; border: 2px solid #064710;">
+            <button type="submit" class="btn" style="background-color: #064710; color: white; border-radius: 50px; padding: 0.375rem 1.5rem; border: 2px solid #064710;">Buscar</button>
+        </form>
+    </div>
+
+    {% if query %}
+        <div class="card shadow-sm p-4 border-0 mt-4">
+            {% if libros %}
+                <h2 class="text-success text-center">Resultados de búsqueda</h2>
+                <ul class="list-group list-group-flush mt-3">
+                    {% for libro in libros %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">{{ libro.nombre }}</span>
+                            <span class="text-muted">{{ libro.autor }} - {{ libro.categoria }}</span>
+                            <span class="badge {% if libro.estado|lower|trim == 'prestado' %}bg-danger{% else %}bg-success{% endif %} text-white">
+                                {{ libro.estado }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>                    
+            {% else %}
+                <p class="text-danger text-center fs-5 mt-3">No se encontraron libros que coincidan con "<strong>{{ query }}</strong>".</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="mt-5 d-flex flex-column align-items-center gap-3" style="margin-bottom: 70px;">
+        <a href="{{ url_for('reservar') }}" class="btn-custom">Realizar una reserva</a>
+        <a href="{{ url_for('devolver') }}" class="btn-custom">Devolver Libro</a>
+    </div>
+
+    <!-- Icono historial -->
+    <a href="{{ url_for('historial') }}" class="position-fixed top-0 start-0 p-3" style="margin-left: 10px; margin-top: 20px;">
+        <img src="{{ url_for('static', filename='images/historialimg.png') }}" alt="Guardar" width="100" height="100">
+    </a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

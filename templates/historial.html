@@ -8,6 +8,7 @@
     <style>
         body {
             background-color: #f8f9fa;
+            font-family: 'Times New Roman', serif;
         }
         .container {
             background-color: #ffffff;
@@ -17,14 +18,28 @@
         }
         h1 {
             font-size: 2rem;
-            color: #000000;
+            color: #064710;
             margin-bottom: 20px;
         }
         .table {
             margin-top: 20px;
+            font-size: 0.9rem;
+            max-width: 70%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .table th, .table td {
+            padding: 8px;
+        }
+        .table th {
+            background-color: #064710;
+            color: white;
+        }
+        .table td {
+            color: #064710;
         }
         .btn-inicio {
-            background-color: #343a40;
+            background-color: #064710;
             color: white;
             padding: 12px 30px;
             border-radius: 50px;
@@ -35,20 +50,37 @@
         }
         .btn-inicio:hover {
             text-decoration: underline;
-            background-color: #343a40;
+            background-color: #064710;
             color: white;
+        }
+        .w-100 {
+            background-color: #bee3ef;
+            width: 95%;
+            margin: 0 auto;
+        }
+        .w-100 span {
+            color: #064710;
+            font-size: 0.9rem;
+            font-weight: normal;
         }
     </style>
 </head>
-<body>
-    <div class="container mt-5">
-        <h1>Historial de Reservas</h1>
+<body style="background-color: #f4f3ed;">
+    <div class="w-100 text-center py-1">
+        <span>
+            Reservas de Libros Exclusivos
+        </span>
+    </div>
+    
+    <div class="text-center mt-5">
+        <img src="{{ url_for('static', filename='images/historial.png') }}" class="img-fluid" alt="Biblioteca" width="300">
         <table class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
+                    <th>Id Reserva</th>
                     <th>Libro</th>
                     <th>Autor</th>
-                    <th>Usuario</th>
+                    <th>Id Usuario</th>
                     <th>Fecha de Reserva</th>
                     <th>Fecha de Devolución</th>
                 </tr>
@@ -56,23 +88,29 @@
             <tbody>
                 {% for reserva in historial %}
                 <tr>
+                    <td>{{ reserva['id_reserva'] }}</td>
                     <td>{{ reserva['nombre'] }}</td>
                     <td>{{ reserva['autor'] }}</td>
-                    <td>{{ reserva['nombre_usuario'] }}</td>
+                    <td>{{ reserva['id_usuario'] }}</td>
                     <td>{{ reserva['fecha_reserva'] }}</td>
                     <td>{{ reserva['fecha_devolucion'] }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center">No hay reservas en el historial.</td>
+                    <td colspan="6" class="text-center">No hay reservas en el historial.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        
         <div class="d-flex justify-content-start mt-4 mb-4">
             <a href="{{ url_for('index') }}" class="btn btn-dark px-4 py-2 fw-bold rounded-pill">
                 Volver al inicio
             </a>
+        </div>
+        <div class="mt-5 d-flex flex-column align-items-center gap-3" style="margin-bottom: 70px;">
+            <a href="{{ url_for('reservar') }}" class="btn-custom">Realizar una reserva</a>
+            <a href="{{ url_for('devolver') }}" class="btn-custom">Devolver Libro</a>
         </div>
     </div>
 
