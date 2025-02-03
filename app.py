@@ -12,6 +12,7 @@ app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 conexion_db = Conexion_Db()
 biblioteca = Biblioteca()
+reservadao= ReservaDAO()
 
 def obtener_usuario_por_id(id_usuario):
     with conexion_db.get_db() as conn:
@@ -19,7 +20,6 @@ def obtener_usuario_por_id(id_usuario):
         if not usuario_row:
             return None
         
-        # Crear instancia de usuario según el tipo
         if usuario_row['tipo'] == 'profesor':
             return Profesor(usuario_row['id_usuario'], usuario_row['nombre'])
         elif usuario_row['tipo'] == 'estudiante':
@@ -46,55 +46,69 @@ def index():
 
     return render_template("index.html", query=query, libros=libros, usuarios=usuarios)
 
-@app.route("/reservar", methods=["POST"])
+@app.route("/reservar", methods=["GET", "POST"])
 def reservar():
-    id_libro = request.form.get("id_libro")
-    id_usuario = request.form.get("id_usuario")
+    if request.method == "POST":
+        id_libro = request.form.get("id_libro")
+        id_usuario = request.form.get("id_usuario")
 
-    # Validación de los datos
-    if not id_libro or not id_usuario:
-        flash('Por favor, selecciona un libro y un usuario.', 'danger')
-        return redirect(url_for('index'))
+        if not id_libro or not id_usuario:
+            flash('Por favor, selecciona un libro y un usuario.', 'danger')
+            return redirect(url_for('reservar'))  # Redirigir a la página de reservas
 
-    usuario = obtener_usuario_por_id(int(id_usuario))
-    if not usuario:
-        flash('Usuario no encontrado. Por favor, verifica el ID de usuario.', 'danger')
-        return redirect(url_for('index'))
+        usuario = obtener_usuario_por_id(int(id_usuario))
+        if not usuario:
+            flash('Usuario no encontrado. Por favor, verifica el ID de usuario.', 'danger')
+            return redirect(url_for('reservar'))
 
-    libro = biblioteca.buscar_libro_por_id(int(id_libro))
-    if not libro:
-        flash('Libro no encontrado.', 'danger')
-        return redirect(url_for('index'))
+        libro = biblioteca.buscar_libro_por_id(int(id_libro))
+        if not libro:
+            flash('Libro no encontrado.', 'danger')
+            return redirect(url_for('reservar'))
 
-    exito = biblioteca.prestar_libro(id_libro, id_usuario)
-    if exito:
-        flash('Reserva realizada con éxito!', 'success')
-    else:
-        flash('No se pudo realizar la reserva. Verifica la disponibilidad y permisos.', 'danger')
+        exito = biblioteca.prestar_libro(id_libro, id_usuario)
+        if exito:
+            flash('Reserva realizada con éxito!', 'success')
+        else:
+            flash('No se pudo realizar la reserva. Verifica la disponibilidad y permisos.', 'danger')
 
-    return redirect(url_for('index'))
+        return redirect(url_for('reservar'))
 
-@app.route("/devolver", methods=["POST"])
+    # Si es una solicitud GET, se renderiza la página de reservas
+    usuarios = obtener_usuarios()
+    libros=obtener_libros()
+    return render_template("reservas.html", libros=libros, usuarios=usuarios)
+
+@app.route("/devolver", methods=["GET", "POST"])
 def devolver():
-    id_libro = request.form.get('id_libro')
+    if request.method == "POST":
+        id_reserva = request.form.get('id_reserva')
 
-    if not id_libro:
-        flash("Por favor, selecciona un libro para devolver.", "danger")
-        return redirect(url_for('index'))
+        if not id_reserva:
+            flash("Por favor, ingresa el ID de la reserva para devolver el libro.", "danger")
+            return redirect(url_for('devolver'))  # Redirigir a la página de devoluciones
 
-    exito = biblioteca.devolver_libro(int(id_libro))
+        try:
+            id_reserva = int(id_reserva)
+        except ValueError:
+            flash("ID de reserva inválido.", "danger")
+            return redirect(url_for('devolver'))
 
-    if exito:
-        with conexion_db.get_db() as conn:
-            conn.execute(''' 
-                DELETE FROM reservas WHERE id_libro = ? 
-            ''', (id_libro,))
-        
-        flash("Libro devuelto con éxito y reserva eliminada.", "success")
-    else:
-        flash("No se pudo devolver el libro. Verifica el estado de la reserva.", "danger")
+        # Usar el ReservaDAO para devolver el libro
+        exito = reservadao.devolver_libro(id_reserva)
 
-    return redirect(url_for('index'))
+        if exito:
+            flash("Libro devuelto con éxito y reserva eliminada.", "success")
+        else:
+            flash("No se pudo devolver el libro. Verifica el estado de la reserva.", "danger")
+
+        return redirect(url_for('devolver'))
+
+    # Si es una solicitud GET, se renderiza la página de devoluciones
+    libros_reservados = reservadao.listar_reservas()  # Obtener las reservas de libros
+    return render_template("devolver_libro.html", libros_reservados=libros_reservados)
+
+
 
 @app.route("/historial")
 def historial():
