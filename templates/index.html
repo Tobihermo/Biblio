@@ -53,14 +53,29 @@
                 <ul class="list-group list-group-flush mt-3">
                     {% for libro in libros %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span class="fw-semibold">{{ libro.nombre }}</span>
-                            <span class="text-muted">{{ libro.autor }} - {{ libro.categoria }}</span>
-                            <span class="badge {% if libro.estado|lower|trim == 'prestado' %}bg-danger{% else %}bg-success{% endif %} text-white">
-                                {{ libro.estado }}
-                            </span>
+                            <!-- Hacemos el libro clickeable para abrir el modal -->
+                            {% if libro.estado|lower|trim == 'prestado' %}
+                                <!-- Si el libro está prestado, mostrar opción de devolver -->
+                                <span class="fw-semibold" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalDevolucion" data-libro-id="{{ libro.id_libro }}" data-libro-nombre="{{ libro.nombre }}">
+                                    {{ libro.nombre }}
+                                </span>
+                                <span class="text-muted">{{ libro.autor }} - {{ libro.categoria }}</span>
+                                <span class="badge bg-danger text-white">
+                                    {{ libro.estado }}
+                                </span>
+                            {% else %}
+                                <!-- Si el libro no está prestado, mostrar opción de reservar -->
+                                <span class="fw-semibold" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalReserva" data-libro-id="{{ libro.id_libro }}" data-libro-nombre="{{ libro.nombre }}">
+                                    {{ libro.nombre }}
+                                </span>
+                                <span class="text-muted">{{ libro.autor }} - {{ libro.categoria }}</span>
+                                <span class="badge bg-success text-white">
+                                    {{ libro.estado }}
+                                </span>
+                            {% endif %}
                         </li>
                     {% endfor %}
-                </ul>                    
+                </ul>
             {% else %}
                 <p class="text-danger text-center fs-5 mt-3">No se encontraron libros que coincidan con "<strong>{{ query }}</strong>".</p>
             {% endif %}
@@ -72,11 +87,85 @@
         <a href="{{ url_for('devolver') }}" class="btn-custom">Devolver Libro</a>
     </div>
 
+    <!-- Modal para seleccionar usuario y reservar libro -->
+    <div class="modal fade" id="modalReserva" tabindex="-1" aria-labelledby="modalReservaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalReservaLabel">Reservar Libro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para seleccionar usuario -->
+                    <form action="/reservar" method="POST">
+                        <input type="hidden" id="id_libro" name="id_libro">
+                        
+                        <!-- Select para elegir usuario -->
+                        <div class="mb-3">
+                            <label for="id_usuario" class="form-label">Selecciona un usuario</label>
+                            <select name="id_usuario" id="id_usuario" class="form-control">
+                                {% for usuario in usuarios %}
+                                    <option value="{{ usuario['id_usuario'] }}">{{ usuario['nombre'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Reservar</button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para devolver un libro -->
+    <div class="modal fade" id="modalDevolucion" tabindex="-1" aria-labelledby="modalDevolucionLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDevolucionLabel">Devolver Libro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas devolver el libro <strong id="libroNombreDevolucion"></strong>?</p>
+                    <form action="/devolver" method="POST">
+                        <input type="hidden" id="id_libro_devolver" name="id_libro">
+                        <button type="submit" class="btn btn-danger">Devolver</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Icono historial -->
     <a href="{{ url_for('historial') }}" class="position-fixed top-0 start-0 p-3" style="margin-left: 10px; margin-top: 20px;">
         <img src="{{ url_for('static', filename='images/historialimg.png') }}" alt="Guardar" width="100" height="100">
     </a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para pasar los datos del libro seleccionado al modal -->
+    <script>
+        var modalReserva = document.getElementById('modalReserva');
+        modalReserva.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Botón que activó el modal
+            var libroId = button.getAttribute('data-libro-id');
+            var libroNombre = button.getAttribute('data-libro-nombre');
+            var libroEstado = button.getAttribute('data-libro-estado');
+            var inputLibroId = modalReserva.querySelector('#id_libro');
+            inputLibroId.value = libroId;
+        });
+
+        var modalDevolucion = document.getElementById('modalDevolucion');
+        modalDevolucion.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Botón que activó el modal
+            var libroId = button.getAttribute('data-libro-id');
+            var libroNombre = button.getAttribute('data-libro-nombre');
+            var inputLibroId = modalDevolucion.querySelector('#id_libro_devolver');
+            inputLibroId.value = libroId;
+            var libroNombreElement = modalDevolucion.querySelector('#libroNombreDevolucion');
+            libroNombreElement.textContent = libroNombre;
+        });
+    </script>
 </body>
 </html>
