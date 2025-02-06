@@ -8,39 +8,83 @@
     <style>
         .btn-custom {
             background-color: #bee3ef;
-            color: #064710;
+            color: #6cc0c6;
             font-family: 'Times New Roman', serif;
-            font-size: 1.25rem;
-            width: 8cm;
+            font-size: 1rem;
+            width: 6cm;
             border-radius: 50px;
-            padding: 0.75rem;
+            padding: 0.5rem;
             text-align: center;
             display: inline-block;
             transition: all 0.3s ease;
             text-decoration: none;
         }
-
         .btn-custom:hover {
-            background-color: #064710;
+            background-color: transparent;
+            color: #6cc0c6;
+            border: 2px solid #6cc0c6;
+        }
+
+        .btn-reserva {
+            background-color: #6cc0c6;
             color: white;
+            border: 2px solid #6cc0c6;
+        }
+
+        .btn-reserva:hover {
+            background-color: transparent;
+            color: #6cc0c6;
+            border: 2px solid #6cc0c6;
+        }
+
+        .btn-devolver {
+            background-color: #c42e44;
+            color: white;
+            border: 2px solid #c42e44;
+            margin-bottom: 70px; /* Aquí se añade el margen inferior */
+        }
+
+        .btn-devolver:hover {
+            background-color: transparent;
+            color: #c42e44;
+            border: 2px solid #c42e44;
+        }
+
+        .text-success {
+            color: #6cc0c6 !important;
+        }
+
+        .badge.bg-danger {
+            background-color: #c42e44 !important;
+        }
+
+        .badge.bg-success {
+            background-color: #6cc0c6 !important;
+        }
+        .footer-img {
+            width: 100%;
+            display: block;
+        }
+        .mt-5 .d-flex a:last-child {
+            margin-bottom: 120px;
         }
     </style>
 </head>
 <body style="background-color: #f4f3ed; font-family: 'Times New Roman', serif;">
-    <div class="w-100 text-center py-1 position-fixed top-0 start-0" style="background-color: #bee3ef; z-index: 1000; width: 100%; margin: 0;">
-        <span style="color: #064710; font-family: 'Times New Roman', serif; font-size: 0.9rem; font-weight: normal;">
+    <div class="w-100 text-center py-1 position-fixed top-0 start-0" style="background-color: #6cc0c6; z-index: 1000; width: 100%; margin: 0;">
+        <span style="color: #ffffff; font-family: 'Times New Roman', serif; font-size: 0.9rem; font-weight: normal;">
             Reservas de Libros Exclusivos
         </span>
     </div>
 
     <div class="text-center mt-5">
-        <img src="{{ url_for('static', filename='images/biblioteca.png') }}" class="img-fluid" alt="Biblioteca" width="300" margin-top: 20px;>
+        <img src="{{ url_for('static', filename='imagenes/biblioteca.png') }}" class="img-fluid" alt="Biblioteca" width="300" margin-top: 20px;>
     </div>
 
     <div class="card p-4 border-0" style="background-color: transparent;">
         <form action="/" method="POST" class="d-flex justify-content-center">
-            <input type="text" name="query" class="form-control w-50 rounded-pill px-3" placeholder="Buscar por título, autor o categoría" value="{{ query }}" style="background-color: #f4f3ed; border: 2px solid #064710;">
-            <button type="submit" class="btn" style="background-color: #064710; color: white; border-radius: 50px; padding: 0.375rem 1.5rem; border: 2px solid #064710;">Buscar</button>
+            <input type="text" name="query" class="form-control w-50 rounded-pill px-3" placeholder="Buscar por título, autor o categoría" value="{{ query }}" style="background-color: #f4f3ed; border: 2px solid #6cc0c6;"> <!-- Cambiado borde a #6cc0c6 -->
+            <button type="submit" class="btn" style="background-color: #6cc0c6; color: white; border-radius: 50px; padding: 0.375rem 1.5rem; border: 2px solid #6cc0c6;">Buscar</button> <!-- Cambiado el color de fondo y borde -->
         </form>
     </div>
 
@@ -78,8 +122,10 @@
     {% endif %}
 
     <div class="mt-5 d-flex flex-column align-items-center gap-3" style="margin-bottom: 70px;">
-        <a href="{{ url_for('reservar') }}" class="btn-custom">Realizar una reserva</a>
-        <a href="{{ url_for('devolver') }}" class="btn-custom">Devolver Libro</a>
+        <img src="{{ url_for('static', filename='imagenes/libros1.png') }}" class="img-fluid" alt="Libros 1" width="100%" style="margin-bottom: 20px;">
+        <a href="{{ url_for('reservar') }}" class="btn-custom btn-reserva">Realizar una reserva</a>
+        <img src="{{ url_for('static', filename='imagenes/libros2.png') }}" class="img-fluid" alt="Libros 2" width="100%" style="margin-top: 20px;">
+        <a href="{{ url_for('devolver') }}" class="btn-custom btn-devolver">Devolver Libro</a>
     </div>
 
     <div class="modal fade" id="modalReserva" tabindex="-1" aria-labelledby="modalReservaLabel" aria-hidden="true">
@@ -89,6 +135,7 @@
                     <h5 class="modal-title" id="modalReservaLabel">Reservar Libro</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <!--Tocas y te aparece devolver libro-->
                 <div class="modal-body">
                     <form action="/reservar" method="POST">
                         <input type="hidden" id="id_libro" name="id_libro">
@@ -128,8 +175,13 @@
         </div>
     </div>
 
+    <footer>
+        <img src="{{ url_for('static', filename='imagenes/footer.png') }}" alt="Footer" class="footer-img">
+    </footer>
+    
+
     <a href="{{ url_for('historial') }}" class="position-fixed top-0 start-0 p-3" style="margin-left: 10px; margin-top: 20px;">
-        <img src="{{ url_for('static', filename='images/historialimg.png') }}" alt="Guardar" width="100" height="100">
+        <img src="{{ url_for('static', filename='imagenes/historialimg.png') }}" alt="Guardar" width="100" height="100">
     </a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

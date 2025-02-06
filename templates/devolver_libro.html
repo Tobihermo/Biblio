@@ -8,57 +8,88 @@
     <style>
         .btn-custom {
             background-color: #bee3ef;
-            color: #064710;
+            color: #c42e44;
             font-family: 'Times New Roman', serif;
-            font-size: 1.25rem;
-            width: 8cm;
+            font-size: 1rem;
+            width: 6cm;
             border-radius: 50px;
-            padding: 0.75rem;
+            padding: 0.5rem;
             text-align: center;
             display: inline-block;
             transition: all 0.3s ease;
             text-decoration: none;
         }
-    
+
         .btn-custom:hover {
-            background-color: #064710;
-            color: white;
+            background-color: transparent;
+            border: 2px solid #c42e44;
+            color: #c42e44;
+            text-decoration: none;
         }
 
         .btn-devolver {
-            background-color: #620c19;
-            color: #fff;
+            background-color: #c42e44;
+            color: white;
             border: none;
+            height: 2.2rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
-            width: 8cm;
-            padding: 0.75rem;
-            font-size: 1.25rem;
+        }
+
+        .btn-devolver:hover {
+            background-color: transparent;
+            border: 2px solid #c42e44;
+            color: #c42e44;
+        }
+
+        .btn-volver {
+            background-color: #a6a6a6;
+            font-family: 'Times New Roman', serif;
+            color: white;
+            font-size: 1rem;
+            width: 6cm;
             border-radius: 50px;
+            padding: 0.5rem;
+            text-align: center;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-volver:hover {
+            background-color: transparent;
+            border: 2px solid #a6a6a6;
+            color: #a6a6a6;
+        }
+
+        .mt-5 .d-flex a:last-child {
+            margin-bottom: 70px;
         }
     </style>
 </head>
 <body style="background-color: #f4f3ed;">
-    <div class="w-100 text-center py-1 position-fixed top-0 start-0" style="background-color: #bee3ef; z-index: 1000; width: 100%; margin: 0;">
-        <span style="color: #064710; font-family: 'Times New Roman', serif; font-size: 0.9rem; font-weight: normal;">
+    <div class="w-100 text-center py-1 position-fixed top-0 start-0" style="background-color: #6cc0c6; z-index: 1000; width: 100%; margin: 0;">
+        <span style="color: #ffffff; font-family: 'Times New Roman', serif; font-size: 0.9rem; font-weight: normal;">
             Reservas de Libros Exclusivos
         </span>
     </div>
     
     <div class="text-center mt-5">
-        <img src="{{ url_for('static', filename='images/devolverlibro.png') }}" class="img-fluid" alt="Biblioteca" width="300" margin-top: 20px;>
+        <img src="{{ url_for('static', filename='imagenes/devolverlibro.png') }}" class="img-fluid" alt="Biblioteca" width="300" margin-top: 20px;>
 
         <div class="p-4" style="background-color: #f4f3ed; box-shadow: 0 4px 8px rgba(100, 100, 100, 0.2); width: 80%; max-width: 800px; margin: auto; font-family: 'Times New Roman', serif; border-radius: 15px;">
             <form action="{{ url_for('devolver') }}" method="POST">
                 <div class="mb-3 text-start">
-                    <label for="id_reserva" class="form-label fw-bold">Ingrese el ID de la Reserva:</label>
-                    <input type="text" name="id_reserva" id="id_reserva" class="form-control">
+                    <label for="id_libro" class="form-label fw-bold">Seleccione el libro a devolver:</label>
+                    <select name="id_libro" id="id_libro" class="form-select">
+                        {% for libro in libros_reservados %}
+                            <option value="{{ libro.id_libro }}">{{ libro.nombre }} - {{ libro.autor }}</option>
+                        {% endfor %}
+                    </select>                    
                 </div>
-
-                <button type="submit" class="btn w-100" style="background-color: #620c19; color: #fff; border: none; transition: all 0.3s ease;" 
-                    onmouseover="this.style.backgroundColor='#bee3ef'; this.style.color='#620c19';" 
-                    onmouseout="this.style.backgroundColor='#620c19'; this.style.color='#fff';">
-                    Devolver
-                </button>
+                
+                <button type="submit" class="btn btn-devolver w-100">Devolver</button>
             </form>
         </div>
 
@@ -75,11 +106,16 @@
             {% endif %}
         {% endwith %}
 
-        <div class="text-center mt-5 mb-4" style="margin-bottom: 70px;">
-            <a href="{{ url_for('index') }}" class="btn-custom">Volver al inicio</a>
+        <div class="mt-5 d-flex flex-column align-items-center gap-3">
+            <a href="{{ url_for('index') }}" class="btn-volver">Volver al inicio</a>
         </div>               
     </div>
 
+    <!-- Icono historial -->
+    <a href="{{ url_for('historial') }}" class="position-fixed top-0 start-0 p-3" style="margin-left: 10px; margin-top: 20px;">
+        <img src="{{ url_for('static', filename='imagenes/historialimg.png') }}" alt="Guardar" width="100" height="100">
+    </a>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

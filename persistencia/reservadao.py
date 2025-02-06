@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 
 
 class ReservaDAO:
-    def __init__(self): 
+    def __init__(self):
         self.__db_path = "data/biblioteca.db"
         self.__inicializar_db()
 
@@ -37,7 +37,7 @@ class ReservaDAO:
                 ''', (
                     reserva.id_libro,
                     reserva.id_usuario,
-                    str(reserva.fecha_reserva), 
+                    str(reserva.fecha_reserva),
                     str(reserva.fecha_devolucion)
                 ))
                 conn.commit()
@@ -59,23 +59,21 @@ class ReservaDAO:
             print(f"Error al eliminar reserva: {e}")
 
     def listar_reservas(self):
-        """
-        Obtener todas las reservas de la base de datos.
-        """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    SELECT * FROM reservas
-                ''')
-                rows = cur.fetchall()
-                return [
-                    Reserva(row[0], row[1], row[2], row[3], row[4])
-                    for row in rows
-                ]
-        except sqlite3.Error as e:
-            print(f"Error al listar reservas: {e}")
-            return []
+        with self.get_db() as conn:
+            reservas = conn.execute('''
+                SELECT reservas.id_reserva, biblioteca.id_libro, biblioteca.nombre, biblioteca.autor 
+                FROM reservas
+                JOIN biblioteca ON reservas.id_libro = biblioteca.id_libro
+            ''').fetchall()
+
+        return [
+            {
+                "id_libro": reserva[1],  # Usamos índices de las tuplas
+                "nombre": reserva[2],
+                "autor": reserva[3]
+            }
+            for reserva in reservas
+        ]
 
     def obtener_reservas_por_usuario(self, id_usuario):
         """
@@ -96,32 +94,24 @@ class ReservaDAO:
             print(f"Error al obtener reservas por usuario: {e}")
             return []
 
-
     def devolver_libro(self, id_reserva):
-        """
-        Devuelve un libro y elimina la reserva correspondiente.
-        """
         try:
-            with sqlite3.connect(self.__db_path) as conn:
+            with self.get_db() as conn:
                 cur = conn.cursor()
 
-                # Obtener los detalles de la reserva
                 cur.execute('SELECT id_libro FROM reservas WHERE id_reserva = ?', (id_reserva,))
                 row = cur.fetchone()
-                if row is None:
-                    raise ValueError("Reserva no encontrada")
+                if not row:
+                    return False
+
                 id_libro = row[0]
-
-                # Eliminar la reserva
                 cur.execute('DELETE FROM reservas WHERE id_reserva = ?', (id_reserva,))
-                flash(f"Reserva {id_reserva} devuelta con éxito.", "success")
-                # Actualizar el estado del libro a "disponible"
                 cur.execute('UPDATE biblioteca SET estado = "disponible" WHERE id_libro = ?', (id_libro,))
-
                 conn.commit()
-                print("Libro devuelto correctamente.")
+                return True
         except sqlite3.Error as e:
             print(f"Error al devolver el libro: {e}")
+            return False
 
     def obtener_libros_disponibles(self, nivel_acceso):
         with sqlite3.connect(self.__db_path) as conn:

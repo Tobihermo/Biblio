@@ -1,0 +1,89 @@
+/* INDEX */
+/* Fondo de la página */
+body {
+    background-color: #f4f3ed;
+}
+
+/* Encabezado */
+.w-100 {
+    background-color: #bee3ef;
+}
+
+/* Título */
+h1.fw-bold {
+    color: #064710;
+    font-family: 'Times New Roman', serif;
+}
+
+/* Formulario de búsqueda */
+.card {
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Enlaces de acción */
+a.btn {
+    width: 8cm;
+}
+
+/* Imagen */
+img.img-fluid {
+    max-width: 250px;
+    height: auto;
+}
+
+
+/* RESERVAS */
+
+.w-100 {
+    background-color: #bee3ef;
+    width: 95%;
+    margin: 0 auto;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.py-1 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.card {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.alert {
+    margin-top: 1rem;
+}
+
+.btn {
+    width: 100%;
+}
+
+.btn-primary {
+    background-color: #0a3a69;
+}
+
+.btn-dark {
+    background-color: #343a40;
+}
+
+.fw-bold {
+    font-weight: bold;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.5rem;
+}
