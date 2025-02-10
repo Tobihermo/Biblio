@@ -7,8 +7,8 @@ class Estudiante(Usuario):
     def __init__(self, id_usuario: int, nombre: str):
         super().__init__(id_usuario, nombre, tipo="estudiante")
 
-    def puede_acceder(self, usuario):
+    def puede_acceder(self):
         """
         Cada tipo de usuario tiene acceso a ciertos libros
         """
-        return usuario.nivel_acceso == 1
+        return 1

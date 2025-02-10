@@ -6,9 +6,7 @@ class Usuario:
         self.__id_usuario = id_usuario
         self.__nombre = nombre
         self.__tipo = tipo
-
-    #def puede_acceder(self, libro):
-
+        
     def to_dict(self):
         return {
             'id_usuario': self.__id_usuario,

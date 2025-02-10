@@ -1,6 +1,7 @@
 import sqlite3
 from negocio.entidades.usuarios.usuario import Usuario
-
+from negocio.entidades.usuarios.profesor import Profesor
+from negocio.entidades.usuarios.estudiante import Estudiante
 
 class UsuarioDAO:
     def __init__(self):
@@ -65,6 +66,28 @@ class UsuarioDAO:
         except sqlite3.Error as e:
             print(f"Error al obtener usuario: {e}")
             return None
+
+    def obtener_usuario_por_id(self, id_usuario):
+        with sqlite3.connect(self.__db_path) as conn:
+            conn.row_factory = sqlite3.Row  
+            usuario_row = conn.execute(
+                'SELECT * FROM usuarios WHERE id_usuario = ?', (id_usuario,)
+            ).fetchone()
+
+            print("USUARIO ROW: ", usuario_row)
+            if not usuario_row:
+                return None
+
+            if usuario_row['tipo'] == 'profesor':
+                return Profesor(usuario_row['id_usuario'], usuario_row['nombre'])
+            elif usuario_row['tipo'] == 'estudiante':
+                return Estudiante(usuario_row['id_usuario'], usuario_row['nombre'])
+            return None
+
+    def obtener_usuarios(self):
+        with sqlite3.connect(self.__db_path) as conn:
+            conn.row_factory = sqlite3.Row  
+            return conn.execute('SELECT * FROM usuarios').fetchall()
 
     def listar_usuarios(self):
         """

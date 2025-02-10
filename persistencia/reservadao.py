@@ -121,3 +121,29 @@ class ReservaDAO:
                 WHERE estado = "disponible" AND nivel_acceso <= ?
             ''', (nivel_acceso,))
             return cur.fetchall()
+
+    def obtener_historial(self):
+        with sqlite3.connect(self.__db_path) as conn:
+            conn.row_factory = sqlite3.Row 
+            historial = conn.execute(''' 
+                SELECT * FROM reservas
+                JOIN biblioteca ON reservas.id_libro = biblioteca.id_libro
+                JOIN usuarios ON reservas.id_usuario = usuarios.id_usuario
+                ORDER BY reservas.fecha_reserva DESC
+            ''').fetchall()
+            return historial
+
+    def obtener_reserva_por_id_libro(self, id_libro: int):
+        with sqlite3.connect(self.__db_path) as conn:
+            conn.row_factory = sqlite3.Row 
+            reserva = conn.execute('''
+                SELECT id_reserva FROM reservas WHERE id_libro = ?
+            ''', (id_libro,)).fetchone()
+            return reserva
+
+    def obtener_max_reserva(self):
+        with sqlite3.connect(self.__db_path) as conn:
+            max_id = conn.execute('SELECT MAX(id_reserva) FROM reservas').fetchone()[0]
+            if max_id is None:
+                return 1
+            return max_id + 1

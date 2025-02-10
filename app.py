@@ -1,6 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from persistencia.reservadao import ReservaDAO
+from persistencia.usuariodao import UsuarioDAO
+from persistencia.librodao import LibroDAO
 from persistencia.conexion_db import Conexion_Db
 from negocio.entidades.usuarios.profesor import Profesor
 from negocio.entidades.usuarios.estudiante import Estudiante
@@ -13,41 +15,15 @@ app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 conexion_db = Conexion_Db()
 biblioteca = Biblioteca()
 reservadao = ReservaDAO()
-
-
-def obtener_usuario_por_id(id_usuario):
-    with conexion_db.get_db() as conn:
-        usuario_row = conn.execute(
-            'SELECT * FROM usuarios WHERE id_usuario = ?', (id_usuario,)).fetchone()
-        if not usuario_row:
-            return None
-
-        if usuario_row['tipo'] == 'profesor':
-            return Profesor(usuario_row['id_usuario'], usuario_row['nombre'])
-        elif usuario_row['tipo'] == 'estudiante':
-            return Estudiante(usuario_row['id_usuario'], usuario_row['nombre'])
-        return None
-
-
-def obtener_libros(query=""):
-    with conexion_db.get_db() as conn:
-        if query:
-            return conn.execute(''' 
-                SELECT * FROM biblioteca WHERE nombre LIKE ? OR autor LIKE ? 
-            ''', (f'%{query}%', f'%{query}%')).fetchall()
-        return biblioteca.listar_libros()
-
-
-def obtener_usuarios():
-    with conexion_db.get_db() as conn:
-        return conn.execute('SELECT * FROM usuarios').fetchall()
+usuariodao= UsuarioDAO()
+librodao= LibroDAO()
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     query = request.form.get("query", "").strip()
-    libros = obtener_libros(query)
-    usuarios = obtener_usuarios()
+    libros = librodao.obtener_libros(biblioteca, query)
+    usuarios = usuariodao.obtener_usuarios()
 
     return render_template("index.html", query=query, libros=libros, usuarios=usuarios)
 
@@ -60,10 +36,10 @@ def reservar():
 
         if not id_libro or not id_usuario:
             flash('Por favor, selecciona un libro y un usuario.', 'danger')
-            # Redirigir a la página de reservas
             return redirect(url_for('reservar'))
 
-        usuario = obtener_usuario_por_id(int(id_usuario))
+        usuario = usuariodao.obtener_usuario_por_id(int(id_usuario))
+        
         if not usuario:
             flash(
                 'Usuario no encontrado. Por favor, verifica el ID de usuario.', 'danger')
@@ -74,19 +50,21 @@ def reservar():
             flash('Libro no encontrado.', 'danger')
             return redirect(url_for('reservar'))
 
-        exito = biblioteca.prestar_libro(id_libro, id_usuario)
-        if exito:
-            flash('Reserva realizada con éxito!', 'success')
-        else:    
-            flash('No se pudo realizar la reserva. Verifica la disponibilidad y permisos.', 'danger')
+        if usuario.puede_acceder() >= libro.nivel_acceso:
+            exito = biblioteca.prestar_libro(id_libro, id_usuario)
+            if exito:
+                flash('Reserva realizada con éxito!', 'success')
+            else:    
+                flash('No se pudo realizar la reserva. Verifica la disponibilidad del mismo.', 'danger')
+        else:
+            flash('Tu usuario no tiene los permisos necesarios para acceder a este libro.', 'danger')
+
 
         return redirect(url_for('reservar'))
 
-    # Si es una solicitud GET, se renderiza la página de reservas
-    usuarios = obtener_usuarios()
-    libros = obtener_libros()
+    usuarios = usuariodao.obtener_usuarios()
+    libros = librodao.obtener_libros(biblioteca)
     return render_template("reservas.html", libros=libros, usuarios=usuarios)
-
 
 @app.route("/devolver", methods=["GET", "POST"])
 def devolver():
@@ -97,10 +75,7 @@ def devolver():
             flash("Por favor, selecciona un libro para devolverlo.", "danger")
             return redirect(url_for('devolver'))
 
-        with conexion_db.get_db() as conn:
-            reserva = conn.execute('''
-                SELECT id_reserva FROM reservas WHERE id_libro = ?
-            ''', (id_libro,)).fetchone()
+        reserva = reservadao.obtener_reserva_por_id_libro(id_libro)
 
         if not reserva:
             flash("No se encontró una reserva para ese libro.", "danger")
@@ -108,7 +83,6 @@ def devolver():
 
         id_reserva = reserva['id_reserva']
         exito = reservadao.devolver_libro(id_reserva)
-        print(f"Resultado de devolución: {exito}") 
 
         if exito:
             flash("Libro devuelto con éxito y reserva eliminada.", "success")
@@ -118,22 +92,13 @@ def devolver():
         return redirect(url_for('devolver'))
 
     libros_reservados = reservadao.listar_reservas()
-    print(libros_reservados)
     return render_template("devolver_libro.html", libros_reservados=libros_reservados)
 
 
 @app.route("/historial")
 def historial():
-    with conexion_db.get_db() as conn:
-        historial = conn.execute(''' 
-            SELECT * FROM reservas
-            JOIN biblioteca ON reservas.id_libro = biblioteca.id_libro
-            JOIN usuarios ON reservas.id_usuario = usuarios.id_usuario
-            ORDER BY reservas.fecha_reserva DESC
-        ''').fetchall()
-
+    historial = reservadao.obtener_historial()
     return render_template("historial.html", historial=historial)
-
 
 if __name__ == "__main__":
     app.run(debug=True)

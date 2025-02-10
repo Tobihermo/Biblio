@@ -61,12 +61,22 @@ class LibroDAO:
                         "categoria": row[3],
                         "estado": row[4],
                         "id_estanteria": row[5],
-                        "id_estante": row[6]
+                        "id_estante": row[6],
+                        "nivel_acceso": row[7]
                     }
                 return None
         except sqlite3.Error as e:
             print(f"Error al obtener libro: {e}")
             return None
+    
+    def obtener_libros(self, p_biblioteca, query=""):
+        with sqlite3.connect(self.__db_path) as conn:
+            conn.row_factory = sqlite3.Row  
+            if query:
+                return conn.execute(''' 
+                    SELECT * FROM biblioteca WHERE nombre LIKE ? OR autor LIKE ? 
+                ''', (f'%{query}%', f'%{query}%')).fetchall()
+            return p_biblioteca.listar_libros()
 
     def listar_libros(self):
         try:

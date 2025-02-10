@@ -30,6 +30,7 @@ class Biblioteca:
         Busca un libro por su ID.
         """
         libro_data = self.libro_dao.obtener_libro(id_libro)
+        
         if libro_data:
             return Libro(
                 libro_data["id_libro"],
@@ -39,7 +40,7 @@ class Biblioteca:
                 libro_data["estado"],
                 libro_data["id_estanteria"],
                 libro_data["id_estante"],
-                libro_data.get("nivel_acceso", None)  # Usa .get() para evitar KeyError
+                libro_data["nivel_acceso"]
             )
         return None
 
@@ -52,14 +53,11 @@ class Biblioteca:
                 fecha_reserva = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 fecha_devolucion = (datetime.datetime.now() + datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')
 
-                # Crear la reserva
-                id_reserva = self._generar_id_reserva()
+                id_reserva = self.prestamo_dao.obtener_max_reserva()
                 reserva = Reserva(id_reserva, id_libro, id_usuario, fecha_reserva, fecha_devolucion)
 
-                # Registrar la reserva en la base de datos
                 self.prestamo_dao.agregar_reserva(reserva)
 
-                # Cambiar el estado del libro a "prestado"
                 self.libro_dao.actualizar_estado(id_libro, "prestado")
                 return True
 
@@ -76,7 +74,6 @@ class Biblioteca:
                     self.prestamo_dao.eliminar_reserva(reserva.id_reserva)
                     break
             
-            # Cambiar el estado del libro a "disponible"
             self.libro_dao.actualizar_estado(id_libro, "disponible")
             return True
         return False
@@ -95,7 +92,7 @@ class Biblioteca:
                 libro["estado"],
                 libro["id_estanteria"],
                 libro["id_estante"],
-                libro.get("nivel_acceso", None)
+                libro.get("nivel_acceso",None)
             ) for libro in libros_data
         ]
 
@@ -109,14 +106,5 @@ class Biblioteca:
             for usuario in usuarios_data
         ]
 
-    def _generar_id_reserva(self):
-        """
-        Genera un nuevo ID de reserva basado en el mayor ID existente en la base de datos,
-        utilizando una consulta SQL para mayor eficiencia.
-        """
-        with self.prestamo_dao.get_db() as conn:
-            max_id = conn.execute('SELECT MAX(id_reserva) FROM reservas').fetchone()[0]
-            if max_id is None:
-                return 1
-            return max_id + 1
+
 

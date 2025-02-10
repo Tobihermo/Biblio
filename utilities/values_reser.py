@@ -1,10 +1,8 @@
 import sqlite3
 
-# Conexión a la base de datos (se crea si no existe)
 conn = sqlite3.connect('data/biblioteca.db')
 cursor = conn.cursor()
 
-# Crear la tabla reservas (si no existe ya)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS reservas (
     id_reserva INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,10 +15,8 @@ CREATE TABLE IF NOT EXISTS reservas (
 )
 ''')
 
-# Confirmar los cambios
 conn.commit()
 
-# Cerrar la conexión
 conn.close()
 
 print("Tabla 'reservas' creada exitosamente.")
