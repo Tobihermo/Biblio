@@ -28,6 +28,3 @@ class TestReserva(unittest.TestCase):
             'fecha_devolucion': fecha_devolucion
         }
         self.assertEqual(reserva.to_dict(), esperado)
-
-if __name__ == "__main__":
-    unittest.main()

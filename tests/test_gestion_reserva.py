@@ -103,6 +103,3 @@ class TestGestionBiblioteca(unittest.TestCase):
         id_reserva = self.gestion_biblioteca._generar_id_reserva()
         
         self.assertEqual(id_reserva, 3)
-
-if __name__ == '__main__':
-    unittest.main()

@@ -61,6 +61,3 @@ class TestGestionLibros(unittest.TestCase):
         ]
         self.assertEqual(resultado, libros_esperados)
         self.gestion_libros.libro_dao.listar_libros.assert_called_once()
-
-if __name__ == "__main__":
-    unittest.main()

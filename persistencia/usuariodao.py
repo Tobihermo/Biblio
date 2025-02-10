@@ -31,40 +31,36 @@ class UsuarioDAO:
     def agregar_usuario(self, usuario):
         """
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    INSERT INTO usuarios (id_usuario, nombre, tipo)
-                    VALUES (?, ?, ?)
-                ''', (
-                    usuario.to_dict()['id_usuario'],
-                    usuario.to_dict()['nombre'],
-                    usuario.to_dict()['tipo']
-                ))
-                conn.commit()
-        except sqlite3.Error as e:
-            print(f"Error al agregar usuario: {e}")
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                INSERT INTO usuarios (id_usuario, nombre, correo, tipo)
+                VALUES (?, ?, ?, ?)
+            ''', (
+                usuario.to_dict()['id_usuario'],
+                usuario.to_dict()['nombre'],
+                usuario.to_dict()['correo'],
+                usuario.to_dict()['tipo']
+            ))
+            conn.commit()
+        
 
     def obtener_usuario(self, id_usuario):
         """
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    SELECT * FROM usuarios WHERE id_usuario = ?
-                ''', (id_usuario,))
-                row = cur.fetchone()
-                if row:
-                    return {
-                        "id_usuario": row[0],
-                        "nombre": row[1],
-                        "tipo": row[2]
-                    }
-                return None
-        except sqlite3.Error as e:
-            print(f"Error al obtener usuario: {e}")
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                SELECT * FROM usuarios WHERE id_usuario = ?
+            ''', (id_usuario,))
+            row = cur.fetchone()
+            if row:
+                return {
+                    "id_usuario": row[0],
+                    "nombre": row[1],
+                    "correo": row[2],
+                    "tipo": row[3]
+                }
             return None
 
     def obtener_usuario_por_id(self, id_usuario):
@@ -92,33 +88,27 @@ class UsuarioDAO:
     def listar_usuarios(self):
         """
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    SELECT * FROM usuarios
-                ''')
-                rows = cur.fetchall()
-                return [
-                    {
-                        "id_usuario": row[0],
-                        "nombre": row[1],
-                        "tipo": row[2]
-                    } for row in rows
-                ]
-        except sqlite3.Error as e:
-            print(f"Error al listar usuarios: {e}")
-            return []
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                SELECT * FROM usuarios
+            ''')
+            rows = cur.fetchall()
+            return [
+                {
+                    "id_usuario": row[0],
+                    "nombre": row[1],
+                    "correo": row[2],
+                    "tipo": row[3]
+                } for row in rows
+            ]
 
     def eliminar_usuario(self, id_usuario):
         """
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    DELETE FROM usuarios WHERE id_usuario = ?
-                ''', (id_usuario,))
-                conn.commit()
-        except sqlite3.Error as e:
-            print(f"Error al eliminar usuario: {e}")
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                DELETE FROM usuarios WHERE id_usuario = ?
+            ''', (id_usuario,))
+            conn.commit()

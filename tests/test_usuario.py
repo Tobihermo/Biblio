@@ -17,6 +17,3 @@ class TestUsuario(unittest.TestCase):
             'tipo': "profesor"
         }
         self.assertEqual(usuario.to_dict(), esperado)
-
-if __name__ == "__main__":
-    unittest.main()

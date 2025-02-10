@@ -16,7 +16,8 @@ class LibroDAO:
                 categoria TEXT NOT NULL,
                 estado TEXT NOT NULL,
                 id_estanteria INTEGER NOT NULL,
-                id_estante INTEGER NOT NULL
+                id_estante INTEGER NOT NULL,
+                nivel_acceso INTEGER NOT NULL
             )''')
             conn.commit()
 
@@ -28,8 +29,8 @@ class LibroDAO:
             with sqlite3.connect(self.__db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('''
-                    INSERT INTO biblioteca (id_libro, nombre, autor, categoria, estado, id_estanteria, id_estante)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO biblioteca (id_libro, nombre, autor, categoria, estado, id_estanteria, id_estante, nivel_acceso)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     libro.to_dict()['id_libro'],
                     libro.to_dict()['nombre'],
@@ -37,7 +38,8 @@ class LibroDAO:
                     libro.to_dict()['categoria'],
                     libro.to_dict()['estado'],
                     libro.to_dict()['id_estanteria'],
-                    libro.to_dict()['id_estante']
+                    libro.to_dict()['id_estante'],
+                    libro.to_dict()['nivel_acceso']
                 ))
                 conn.commit()
         except sqlite3.Error as e:
@@ -85,12 +87,13 @@ class LibroDAO:
                 cur.execute('''SELECT * FROM biblioteca''')
                 rows = cur.fetchall()
                 return [
-                    {"id_libro": row[0], "nombre": row[1], "autor": row[2], "categoria": row[3], "estado": row[4], "id_estanteria": row[5], "id_estante": row[6]}
+                    {"id_libro": row[0], "nombre": row[1], "autor": row[2], "categoria": row[3], "estado": row[4], "id_estanteria": row[5], "id_estante": row[6], "nivel_acceso": row[7]}
                     for row in rows
                 ]
         except sqlite3.Error as e:
             print(f"Error al listar libros: {e}")
             return []
+
     def eliminar_libro(self, id_libro):
         """
         """

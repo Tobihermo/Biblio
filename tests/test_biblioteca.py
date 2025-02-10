@@ -49,7 +49,7 @@ class TestBiblioteca(unittest.TestCase):
         resultado = self.biblioteca.buscar_libro_por_id(999)
         self.assertIsNone(resultado)
 
-    def test04_prestar_libro(self):
+    def test05_prestar_libro(self):
         id_libro = 1
         id_usuario = 1
         libro_mock = MagicMock(spec=Libro)
@@ -66,15 +66,40 @@ class TestBiblioteca(unittest.TestCase):
         self.biblioteca.prestamo_dao.agregar_reserva.assert_called_once()
         self.biblioteca.libro_dao.actualizar_estado.assert_called_once_with(id_libro, "prestado")
 
-    def test06_prestar_libro_falla(self):
+    def test06_prestar_dos_libros(self):
+        id_libro1 = 1
+        id_libro2 = 2
+        id_usuario = 1
+        
+        libro_mock1 = MagicMock(spec=Libro)
+        libro_mock1.estado = "disponible"
+        libro_mock2 = MagicMock(spec=Libro)
+        libro_mock2.estado = "disponible"
+        
+        usuario_mock = MagicMock(spec=Usuario)
+        
+        self.biblioteca.buscar_libro_por_id = MagicMock(side_effect=lambda id_libro: libro_mock1 if id_libro == id_libro1 else libro_mock2)
+        self.biblioteca.usuario_dao.obtener_usuario = MagicMock(return_value=usuario_mock)
+        self.biblioteca.prestamo_dao.agregar_reserva = MagicMock()
+        self.biblioteca.libro_dao.actualizar_estado = MagicMock()
+        
+        resultado1 = self.biblioteca.prestar_libro(id_libro1, id_usuario)
+        resultado2 = self.biblioteca.prestar_libro(id_libro2, id_usuario)
+        
+        self.assertTrue(resultado1)
+        self.assertTrue(resultado2)
+        
+        self.assertEqual(self.biblioteca.prestamo_dao.agregar_reserva.call_count, 2)
+        self.biblioteca.libro_dao.actualizar_estado.assert_any_call(id_libro1, "prestado")
+        self.biblioteca.libro_dao.actualizar_estado.assert_any_call(id_libro2, "prestado")
+
+    def test07_prestar_libro_falla(self):
         self.biblioteca.buscar_libro_por_id = MagicMock(return_value=None)
         self.biblioteca.usuario_dao.obtener_usuario = MagicMock(return_value=None)
-
         resultado = self.biblioteca.prestar_libro(1, 1)
-
         self.assertFalse(resultado)
 
-    def test07_devolver_libro(self):
+    def test08_devolver_libro(self):
         id_libro = 1
         libro_mock = MagicMock(spec=Libro)
         libro_mock.estado = "prestado"
@@ -93,7 +118,7 @@ class TestBiblioteca(unittest.TestCase):
         self.biblioteca.prestamo_dao.eliminar_reserva.assert_called_once()
         self.biblioteca.libro_dao.actualizar_estado.assert_called_once_with(id_libro, "disponible")
     
-    def test08_devolver_libro_no_existente(self):
+    def test09_devolver_libro_no_existente(self):
         self.biblioteca.libro_dao.obtener_libro.return_value = None
         
         resultado = self.biblioteca.devolver_libro(999)
@@ -101,7 +126,7 @@ class TestBiblioteca(unittest.TestCase):
         self.assertFalse(resultado)
 
 
-    def test09_listar_libros(self):
+    def test10_listar_libros(self):
         libro_data = [{
             "id_libro": 1,
             "nombre": "Utopía",
@@ -117,14 +142,13 @@ class TestBiblioteca(unittest.TestCase):
         self.assertEqual(len(libros), 1)
         self.assertEqual(libros[0].nombre, "Utopía")
     
-    def test10_listar_libros_vacio(self):
+    def test11_listar_libros_vacio(self):
         self.biblioteca.libro_dao.listar_libros = MagicMock(return_value=[])
 
         resultado = self.biblioteca.listar_libros()
-
         self.assertEqual(resultado, [])
     
-    def test11_listar_usuarios(self):
+    def test12_listar_usuarios(self):
         usuarios_mock = [
             {"id_usuario": 1, "nombre": "Juan Perez", "tipo": "estudiante"},
             {"id_usuario": 2, "nombre": "Pablo Pascal", "tipo": "profesor"}
@@ -138,3 +162,4 @@ class TestBiblioteca(unittest.TestCase):
         self.assertEqual(len(usuarios), 2)
         self.assertEqual(usuarios[0].nombre, "Juan Perez")
         self.assertEqual(usuarios[1].nombre, "Pablo Pascal")
+

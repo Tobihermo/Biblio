@@ -28,35 +28,29 @@ class ReservaDAO:
         return sqlite3.connect(self.__db_path)
 
     def agregar_reserva(self, reserva):
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    INSERT INTO reservas (id_libro, id_usuario, fecha_reserva, fecha_devolucion)
-                    VALUES (?, ?, ?, ?)
-                ''', (
-                    reserva.id_libro,
-                    reserva.id_usuario,
-                    str(reserva.fecha_reserva),
-                    str(reserva.fecha_devolucion)
-                ))
-                conn.commit()
-                print("Reserva agregada correctamente.")
-        except sqlite3.Error as e:
-            print(f"Error al agregar reserva: {e}")
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                INSERT INTO reservas (id_libro, id_usuario, fecha_reserva, fecha_devolucion)
+                VALUES (?, ?, ?, ?)
+            ''', (
+                reserva.id_libro,
+                reserva.id_usuario,
+                str(reserva.fecha_reserva),
+                str(reserva.fecha_devolucion)
+            ))
+            conn.commit()
+            print("Reserva agregada correctamente.")
 
     def eliminar_reserva(self, id_reserva):
         """
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    DELETE FROM reservas WHERE id_reserva = ?
-                ''', (id_reserva,))
-                conn.commit()
-        except sqlite3.Error as e:
-            print(f"Error al eliminar reserva: {e}")
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                DELETE FROM reservas WHERE id_reserva = ?
+            ''', (id_reserva,))
+            conn.commit()
 
     def listar_reservas(self):
         with self.get_db() as conn:
@@ -79,39 +73,31 @@ class ReservaDAO:
         """
         Obtener todas las reservas de un usuario en particular.
         """
-        try:
-            with sqlite3.connect(self.__db_path) as conn:
-                cur = conn.cursor()
-                cur.execute('''
-                    SELECT * FROM reservas WHERE id_usuario = ?
-                ''', (id_usuario,))
-                rows = cur.fetchall()
-                return [
-                    Reserva(row[0], row[1], row[2], row[3], row[4])
-                    for row in rows
-                ]
-        except sqlite3.Error as e:
-            print(f"Error al obtener reservas por usuario: {e}")
-            return []
+        with sqlite3.connect(self.__db_path) as conn:
+            cur = conn.cursor()
+            cur.execute('''
+                SELECT * FROM reservas WHERE id_usuario = ?
+            ''', (id_usuario,))
+            rows = cur.fetchall()
+            return [
+                Reserva(row[0], row[1], row[2], row[3], row[4])
+                for row in rows
+            ]
 
     def devolver_libro(self, id_reserva):
-        try:
-            with self.get_db() as conn:
-                cur = conn.cursor()
+        with self.get_db() as conn:
+            cur = conn.cursor()
 
-                cur.execute('SELECT id_libro FROM reservas WHERE id_reserva = ?', (id_reserva,))
-                row = cur.fetchone()
-                if not row:
-                    return False
+            cur.execute('SELECT id_libro FROM reservas WHERE id_reserva = ?', (id_reserva,))
+            row = cur.fetchone()
+            if not row:
+                return False
 
-                id_libro = row[0]
-                cur.execute('DELETE FROM reservas WHERE id_reserva = ?', (id_reserva,))
-                cur.execute('UPDATE biblioteca SET estado = "disponible" WHERE id_libro = ?', (id_libro,))
-                conn.commit()
-                return True
-        except sqlite3.Error as e:
-            print(f"Error al devolver el libro: {e}")
-            return False
+            id_libro = row[0]
+            cur.execute('DELETE FROM reservas WHERE id_reserva = ?', (id_reserva,))
+            cur.execute('UPDATE biblioteca SET estado = "disponible" WHERE id_libro = ?', (id_libro,))
+            conn.commit()
+            return True
 
     def obtener_libros_disponibles(self, nivel_acceso):
         with sqlite3.connect(self.__db_path) as conn:
@@ -137,7 +123,7 @@ class ReservaDAO:
         with sqlite3.connect(self.__db_path) as conn:
             conn.row_factory = sqlite3.Row 
             reserva = conn.execute('''
-                SELECT id_reserva FROM reservas WHERE id_libro = ?
+                SELECT id_reserva FROM reservas WHERE id_libro = ? ORDER BY id_reserva DESC
             ''', (id_libro,)).fetchone()
             return reserva
 
